@@ -16,14 +16,32 @@ dependencies:
   - monad-loops
 
 default-extensions:
-  - NoImplicitPrelude
+  - BinaryLiterals
+  - ConstraintKinds
   - DataKinds
-  - TypeFamilies
-  - FlexibleContexts
-  - TemplateHaskell
-  - DeriveGeneric
   - DeriveAnyClass
+  - DeriveGeneric
+  - DeriveLift
+  - DerivingStrategies
+  - ExplicitForAll
+  - ExplicitNamespaces
+  - FlexibleContexts
+  - FlexibleInstances
+  - KindSignatures
+  - MagicHash
+  - MonoLocalBinds
+  - NoImplicitPrelude
+  - NoMonomorphismRestriction
   - NoStarIsType
+  - NoStrictData
+  - NoStrict
+  - QuasiQuotes
+  - ScopedTypeVariables
+  - TemplateHaskellQuotes
+  - TemplateHaskell
+  - TypeApplications
+  - TypeFamilies
+  - TypeInType
   - TypeOperators
 
 source-dirs:
