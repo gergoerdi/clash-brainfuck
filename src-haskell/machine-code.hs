@@ -1,14 +1,18 @@
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+module Main where
+
+import Clash.Prelude hiding (lift, (!))
+
 import Brainfuck.Types
-import Brainfuck.Utils
 import Brainfuck.IO
+import RetroClash.Utils (predIdx)
 
 import Data.Word
 import Control.Monad.State
 import Control.Monad.Loops (whileJust_)
 import Data.Array
 import Data.Maybe (isJust)
+import Data.List as L
 
 data Phase
     = Exec
@@ -25,7 +29,7 @@ initBFMachine = MkBFMachine
     { pc = 0
     , stack = []
     , phase = Exec
-    , cells = ([], replicate 30000 0)
+    , cells = ([], L.replicate 30000 0)
     }
 
 interp :: (MonadBFIO m) => (Int -> m (Maybe Char)) -> StateT BFMachine m ()
@@ -80,7 +84,7 @@ fetchFrom s = \i -> return $ do
     guard $ inRange (bounds arr) i
     return $ arr!i
   where
-    arr = listArray (0, length s - 1) s
+    arr = listArray (0, L.length s - 1) s
 
 main :: IO ()
 main = do

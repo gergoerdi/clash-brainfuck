@@ -1,10 +1,13 @@
-{-# LANGUAGE FlexibleContexts #-}
+module Main where
+
+import Clash.Prelude hiding (lift)
 import Brainfuck.IO
 import Brainfuck.Types
 
 import Data.Word
 import Control.Monad.State
 import Control.Monad.Loops (whileM_)
+import Data.List as L
 
 data BF
     = IncrPtr
@@ -54,5 +57,5 @@ hello = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-."
 
 main :: IO ()
 main = do
-    evalStateT (interp $ snd $ parse hello) ([], repeat 0)
+    evalStateT (interp $ snd $ parse hello) ([], L.repeat 0)
     putStrLn ""

@@ -1,0 +1,41 @@
+name: clash-brainfuck
+version: 0.1.0
+category: hardware
+
+dependencies:
+  - base
+  - clash-prelude
+  - clash-lib
+  - clash-ghc
+  - retroclash-lib
+
+  - shake
+  - mustache == 2.3.1
+  - mtl
+  - array
+  - monad-loops
+
+default-extensions:
+  - NoImplicitPrelude
+  - DataKinds
+  - TypeFamilies
+  - FlexibleContexts
+  - TemplateHaskell
+  - DeriveGeneric
+  - DeriveAnyClass
+  - NoStarIsType
+  - TypeOperators
+
+source-dirs:
+  - src
+  - src-haskell
+
+executables:
+  bf-structured:
+    main: structured.hs
+
+  bf-machine-code:
+    main: machine-code.hs
+
+  bf-external-memory:
+    main: external-memory.hs

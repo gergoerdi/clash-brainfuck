@@ -1,16 +1,14 @@
-{-# LANGUAGE FlexibleContexts, GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE DataKinds, TypeFamilies #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
-import Prelude ()
+module Main where
+
 import Clash.Prelude hiding (lift)
 
 import Brainfuck.Types
-import Brainfuck.Utils
 import Brainfuck.IO
 import Brainfuck.Stack
 
+import RetroClash.Utils (predIdx)
 import Data.Word
 import Control.Monad.Reader
 import Control.Monad.State

@@ -1,5 +1,6 @@
 module Brainfuck.IO where
 
+import Prelude
 import Brainfuck.Types
 import Data.Char
 import Control.Monad.State
