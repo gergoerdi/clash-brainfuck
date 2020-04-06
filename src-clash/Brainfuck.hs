@@ -18,6 +18,10 @@ import Control.Monad.State
 import Brainfuck.Types
 import Brainfuck.CPU
 
+import Data.Functor.Barbie
+import Barbies.Bare
+import Control.Lens hiding (Index, (:>))
+
 topEntity
     :: "CLK"     ::: Clock System
     -> "BTN"     ::: Signal System (Active High)
@@ -32,7 +36,7 @@ topEntity = withResetEnableGen board
         , reverse <$> cols
         )
       where
-        (inputNeeded, output) = logicBoard ack (pure Nothing)
+        (inputNeeded, output) = logicBoard (pure Nothing) ack
         ack = isRising False $ debounce (SNat @(Milliseconds 5)) False $
             fromActive <$> btn
 
@@ -79,31 +83,33 @@ keymap =
     Nil
 
 logicBoard
-    :: (HiddenClockResetEnable dom)
-    => Signal dom Bool
-    -> Signal dom (Maybe Cell)
+    :: forall dom. (HiddenClockResetEnable dom)
+    => Signal dom (Maybe Cell)
+    -> Signal dom Bool
     -> (Signal dom Bool, Signal dom (Maybe Cell))
-logicBoard btn input = (inputNeeded <$> cpuOut, output <$> cpuOut)
+logicBoard inputValue ack = (view inputNeeded <$> cpuOut, view output <$> cpuOut)
   where
-    cpuIn = do
-        instr <- progRead
-        memRead <- ramRead
-        outputAck <- btn
-        input <- pure Nothing
-        pure $ CPUIn{..}
-
     cpuOut = cpu cpuIn
 
-    ramRead = blockRam1 NoClearOnReset (SNat @30_000) 0 addr wr
-      where
-        addr = memAddr <$> cpuOut
-        wr = do
-            addr <- memAddr <$> cpuOut
-            dat <- memWrite <$> cpuOut
-            pure $ (addr,) <$> dat
+    ramRead = withStart 0 $ blockRam1 NoClearOnReset (SNat @30_000) 0 ramAddr ramWrite
+    romRead = withStart 0 $ unpack <$> romFilePow2 "hello.rom" romAddr
 
-    progRead = bitCoerce <$> romFilePow2 "hello.rom" addr
-      where
-        addr = progAddr <$> cpuOut
+    cpuIn = do
+        instr <- romRead
+        memRead <- ramRead
+        outputAck <- ack
+        input <- inputValue
+        pure $ CPUIn{..}
+
+    romAddr = view progAddr <$> cpuOut
+
+    ramAddr = view memAddr <$> cpuOut
+    ramWrite = packWrite <$> ramAddr <*> (view memWrite <$> cpuOut)
+
+packWrite :: addr -> Maybe val -> Maybe (addr, val)
+packWrite addr val = (addr,) <$> val
+
+withStart :: (HiddenClockResetEnable dom) => Signal dom a -> Signal dom a -> Signal dom a
+withStart = mux (register True $ pure False)
 
 makeTopEntity 'topEntity

@@ -8,12 +8,16 @@ dependencies:
   - clash-lib
   - clash-ghc
   - retroclash-lib
-
   - shake
   - mustache == 2.3.1
+
   - mtl
   - array
   - monad-loops
+  - barbies
+  - barbies-th
+  - lens
+  - bytestring
 
 default-extensions:
   - BinaryLiterals
@@ -52,8 +56,14 @@ executables:
   bf-structured:
     main: structured.hs
 
-  bf-machine-code:
-    main: machine-code.hs
+  bf-bytecode:
+    main: bytecode.hs
 
   bf-external-memory:
     main: external-memory.hs
+
+  bf-sim-cpu:
+    source-dirs:
+      - src
+      - src-clash
+    main: sim-cpu.hs

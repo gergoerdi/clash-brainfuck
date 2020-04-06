@@ -92,7 +92,7 @@ interp1 instr = gets phase >>= \case
 
     pushPC = do
         pc <- gets pc
-        modify $ \st -> st{ stack = push (stack st) pc }
+        modify $ \st -> st{ stack = push pc (stack st) }
     popPC = modify $ \st ->
         let (top, stack') = pop (stack st)
         in st{ pc = top - 1, stack = stack' }
@@ -123,15 +123,6 @@ instance (Monad m) => MonadBFMemory (BFVec m) where
 instance (MonadBFIO m) => MonadBFIO (BFVec m) where
     input = BFVec . lift $ input
     output = BFVec . lift . output
-
-unfoldr :: SNat n -> (s -> (a, s)) -> s -> Vec n a
-unfoldr n f s0 = map unpack $ generate n f' (Nothing, s0)
-  where
-    f' (_, s) = let (x, s') = f s in (Just x, s')
-    unpack (Just x, _) = x
-
-unfoldrI :: (KnownNat n) => (s -> (a, s)) -> s -> Vec n a
-unfoldrI = unfoldr SNat
 
 loadVec :: (KnownNat n) => [a] -> a -> Vec n a
 loadVec xs x0 = unfoldrI uncons xs

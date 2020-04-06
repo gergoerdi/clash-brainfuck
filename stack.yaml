@@ -2,3 +2,5 @@ resolver: clash-HEAD.yaml
 
 extra-deps:
   - retroclash-lib
+  - barbies-2.0.0.0
+  - barbies-th-0.1

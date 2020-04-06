@@ -1,6 +1,6 @@
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE RecordWildCards, LambdaCase, NumericUnderscores #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuantifiedConstraints, RankNTypes #-}
 module Brainfuck.CPU where
 
 import Brainfuck.Types
@@ -8,42 +8,50 @@ import Brainfuck.Stack
 
 import Clash.Prelude
 import RetroClash.Utils
--- import RetroClash.CPU
 import Control.Monad
 import Data.Maybe
 import Data.Char
 import Data.Word
-import Control.Monad.Writer
-import Control.Monad.State
+import Data.Foldable (traverse_)
+
+import Data.Monoid (Last(..))
+
+import Control.Monad.Writer.Strict
+import Control.Monad.State.Strict
+import Control.Lens hiding (Index, assign)
+
+import Barbies
+import Barbies.Bare
+import Data.Barbie.TH
+
+(.:=) :: (Applicative f, MonadWriter (Barbie b f) m) => Setter' (b f) (f a) -> a -> m ()
+fd .:= x = scribe (iso getBarbie Barbie . fd) (pure x)
+
+type Raw b = b Bare Identity
+type Partial b = Barbie (b Covered) Last
+
+update :: (BareB b, ApplicativeB (b Covered)) => Raw b -> Partial b -> Raw b
+update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie edits)
+  where
+    update1 :: Identity a -> Last a -> Identity a
+    update1 initial edit = maybe initial Identity (getLast edit)
 
 data CPUIn = CPUIn
-    { instr :: Word8
-    , memRead :: Cell
-    , outputAck :: Bool
-    , input :: Maybe Cell
-    }
-    deriving (Generic, Show)
-
-data CPUOut = CPUOut
-    { progAddr :: PC
-    , memAddr :: Ptr
-    , memWrite :: Maybe Cell
-    , output :: Maybe Cell
-    , inputNeeded :: Bool
-    }
-    deriving (Generic, Show)
-
-data CPUOut' = CPUOut'
-    { memWrite' :: Last Cell
-    , output' :: Last Cell
-    , inputNeeded' :: Last Bool
+    { instr :: !Word8
+    , memRead :: !Cell
+    , outputAck :: !Bool
+    , input :: !(Maybe Cell)
     }
 
-instance Semigroup CPUOut' where
-    (CPUOut' wr out inp) <> (CPUOut' wr' out' inp') = CPUOut' (wr <> wr') (out <> out') (inp <> inp')
-
-instance Monoid CPUOut' where
-    mempty = CPUOut' mempty mempty mempty
+declareBareB [d|
+  data CPUOut = CPUOut
+      { _progAddr :: PC
+      , _memAddr :: Ptr
+      , _memWrite :: Maybe Cell
+      , _output :: Maybe Cell
+      , _inputNeeded :: Bool
+      } |]
+makeLenses ''CPUOut
 
 data Phase
     = Init
@@ -56,90 +64,93 @@ data Phase
     deriving (Show, Generic, NFDataX)
 
 data CPUState = CPUState
-    { phase :: Phase
-    , pc :: PC
-    , stack :: Stack StackSize PC
-    , ptr :: Ptr
+    { _phase :: !Phase
+    , _pc :: !PC
+    , _stack :: !(Stack StackSize PC)
+    , _ptr :: !Ptr
     }
     deriving (Generic, NFDataX)
+makeLenses ''CPUState
 
 initBFState = CPUState
-    { phase = Init
-    , pc = 0
-    , stack = Stack (pure 0) 0
-    , ptr = 0
+    { _phase = Init
+    , _pc = 0
+    , _stack = Stack (pure 0) 0
+    , _ptr = 0
     }
 
-cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom CPUOut
+defaultOutput :: CPUState -> Raw CPUOut
+defaultOutput CPUState{..} = CPUOut
+    { _progAddr = _pc
+    , _memAddr = _ptr
+    , _memWrite = Nothing
+    , _output = Nothing
+    , _inputNeeded = False
+    }
+
+cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom (Raw CPUOut)
 cpu = mealyState step' initBFState
-  where
-    step' inp = do
-        -- trace (showX ("step", memRead inp)) $ return ()
-        CPUOut'{..} <- execWriterT (step inp)
-        CPUState{..} <- get
-        return $ CPUOut
-            { progAddr = pc
-            , memAddr = ptr
-            , memWrite = getLast memWrite'
-            , output = getLast output'
-            , inputNeeded = fromMaybe False $ getLast inputNeeded'
-            }
 
-type M = WriterT CPUOut' (State CPUState)
+step' :: CPUIn -> State CPUState (Raw CPUOut)
+step' inp = do
+    edits <- execWriterT (step inp)
+    def <- gets defaultOutput
+    return $ update def edits
 
-pushPC :: M ()
+type CPU = WriterT (Barbie (CPUOut Covered) Last) (State CPUState)
+
+pushPC :: CPU ()
 pushPC = do
-    pc <- gets pc
-    modify $ \st -> st{ stack = push (stack st) (pc - 1) }
+    pc <- use pc
+    stack %= push (pc - 1)
 
-popPC :: M ()
-popPC = modify $ \st ->
-    let (pc', stack') = pop (stack st)
-    in st{ pc = pc', stack = stack' }
+popPC :: CPU ()
+popPC = do
+    (pc', stack') <- uses stack pop
+    pc .= pc'
+    stack .= stack'
 
-step :: CPUIn -> M ()
-step CPUIn{..} = gets phase >>= \case
+step :: CPUIn -> CPU ()
+step CPUIn{..} = use phase >>= \case
     Halt -> return ()
-    Init -> goto Exec
+    Init -> phase .= Exec
     Skip depth -> fetch >>= \case
-        '[' -> goto $ Skip $ depth + 1
-        ']' -> goto $ maybe Exec Skip $ predIdx depth
+        '[' -> phase .= Skip (depth + 1)
+        ']' -> phase .= maybe Exec Skip (predIdx depth)
         _ -> return ()
     Exec -> fetch >>= \case
-        '>' -> modifyPtr (+ 1)
-        '<' -> modifyPtr (subtract 1)
-        '+' -> modifyCell (+ 1)
-        '-' -> modifyCell (subtract 1)
-        '.' -> do
-            tell mempty{ output' = pure memRead }
-            goto WaitOutput
-        ',' -> do
-            tell mempty{ inputNeeded' = pure True }
-            goto WaitInput
-        '[' -> if memRead /= 0 then pushPC else goto (Skip 0)
+        '>' -> ptr %= nextIdx
+        '<' -> ptr %= prevIdx
+        '+' -> writeCell $ nextIdx memRead
+        '-' -> writeCell $ prevIdx memRead
+        '.' -> outputCell memRead
+        ',' -> startInput
+        '[' -> if memRead /= 0 then pushPC else phase .= Skip 0
         ']' -> popPC
-        '\0' -> goto Halt
+        '\0' -> phase .= Halt
         _ -> return ()
-    WaitWrite -> goto Exec
-    WaitOutput -> do
-        tell mempty{ output' = pure memRead }
-        when outputAck $ goto Exec
-    WaitInput -> do
-        tell mempty{ inputNeeded' = pure True }
-        forM_ input $ \x -> writeCell x
+    WaitWrite -> phase .= Exec
+    WaitOutput -> when outputAck $ phase .= Exec
+    WaitInput -> traverse_ writeCell input
   where
     fetch = do
-        modify $ \st -> st{ pc = pc st + 1 }
+        pc += 1
         return $ ascii instr
 
-    goto ph = modify $ \st -> st{ phase = ph }
+outputCell :: Cell -> CPU ()
+outputCell x = do
+    output .:= Just x
+    phase .= WaitOutput
 
-    modifyCell f = writeCell $ f memRead
-    modifyPtr f = modify $ \st -> st{ ptr = f (ptr st) }
+writeCell :: Cell -> CPU ()
+writeCell x = do
+    memWrite .:= Just x
+    phase .= WaitWrite
 
-    writeCell x = do
-        tell mempty{ memWrite' = pure x }
-        goto WaitWrite
+startInput :: CPU ()
+startInput = do
+    inputNeeded .:= True
+    phase .= WaitInput
 
 ascii :: Word8 -> Char
 ascii = chr . fromIntegral

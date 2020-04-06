@@ -1,9 +1,9 @@
+name: clash-HEAD
 resolver: lts-15.2
-name: clash-head
 
 packages:
-  - github: gergoerdi/clash-compiler
-    commit: 464266d893a9c09df68629adad222ebe9fec56de
+  - github: clash-lang/clash-compiler
+    commit: 702fea65584f57e0ff6cd19f3e80af92a27ed6e7
     subdirs:
       - clash-ghc
       - clash-prelude
