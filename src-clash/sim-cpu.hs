@@ -20,6 +20,9 @@ simulateCPU = do
 
     instr <- lift $ readProgROM _progAddr
     memRead <- lift $ readRAM _memAddr
+
+    for_ _memWrite $ lift . writeRAM _memAddr
+
     let input = CPUIn
             { outputAck = True
             , input = Nothing
@@ -29,7 +32,6 @@ simulateCPU = do
     zoom _2 $ put out'
 
     for_ _output $ lift . output
-    for_ _memWrite $ lift . writeRAM _memAddr
 
 main :: IO ()
 main = do
