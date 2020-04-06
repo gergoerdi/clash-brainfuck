@@ -11,6 +11,7 @@ import Brainfuck.Stack
 
 import RetroClash.Utils (predIdx)
 import Data.Word
+import Data.Char (ord)
 import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Loops (whileJust_)
@@ -44,7 +45,7 @@ interp = whileJust_ fetchNext interp1
 
     fetchNext = do
         pc <- nextPC
-        instr <- lift $ readProgROM pc
+        instr <- lift $ ascii <$> readProgROM pc
         return $ do
             guard $ instr /= '\0'
             return instr
@@ -97,5 +98,5 @@ hello = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-."
 
 main :: IO ()
 main = do
-    runBFVec (loadVec hello '\0') $ evalStateT interp initBFState
+    runBFVec (fromIntegral . ord <$> loadVec hello '\0') $ evalStateT interp initBFState
     putStrLn ""

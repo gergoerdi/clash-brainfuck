@@ -151,6 +151,3 @@ startInput :: CPU ()
 startInput = do
     inputNeeded .:= True
     phase .= WaitInput
-
-ascii :: Word8 -> Char
-ascii = chr . fromIntegral
