@@ -23,9 +23,10 @@ simulateCPU = do
 
     lift $ traverse_ (writeRAM _memAddr) _memWrite
 
+    input <- lift $ if _inputNeeded then Just <$> doInput else return Nothing
+
     let cpuIn = CPUIn
             { outputAck = True
-            , input = Nothing
             , ..
             }
     cpuOut'@CPUOut{..} <- zoom _1 $ mapStateT (return . runIdentity) $ cpuIO cpuIn
