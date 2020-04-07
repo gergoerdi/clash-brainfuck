@@ -63,9 +63,9 @@ interp1 instr = gets phase >>= \case
         '-' -> modifyCell (subtract 1)
         '.' -> do
             x <- getCell
-            lift $ output x
+            lift $ doOutput x
         ',' -> do
-            x <- lift input
+            x <- lift doInput
             setCell x
         '[' -> do
             x <- getCell

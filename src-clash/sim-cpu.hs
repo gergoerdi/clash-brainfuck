@@ -2,36 +2,36 @@
 module Main where
 
 import Clash.Prelude hiding (lift)
-import Brainfuck.CPU hiding (output)
+import Brainfuck.CPU
 import Brainfuck.Types
 import Brainfuck.IO
 import Brainfuck.Memory
 
 import qualified Data.ByteString as BS
 import System.IO
-import Data.Foldable (for_)
+import Data.Foldable (traverse_)
 import Control.Monad.State.Strict
 import Control.Lens
 
 
 simulateCPU :: (MonadBFMemory m, MonadBFIO m) => StateT (CPUState, Raw CPUOut) m ()
 simulateCPU = do
-    (s, out@CPUOut{..}) <- get
+    (s, CPUOut{..}) <- get
 
     instr <- lift $ readProgROM _progAddr
     memRead <- lift $ readRAM _memAddr
 
-    for_ _memWrite $ lift . writeRAM _memAddr
+    lift $ traverse_ (writeRAM _memAddr) _memWrite
 
-    let input = CPUIn
+    let cpuIn = CPUIn
             { outputAck = True
             , input = Nothing
             , ..
             }
-    out'@CPUOut{..} <- zoom _1 $ mapStateT (return . runIdentity) $ step' input
-    zoom _2 $ put out'
+    cpuOut'@CPUOut{..} <- zoom _1 $ mapStateT (return . runIdentity) $ cpuIO cpuIn
+    zoom _2 $ put cpuOut'
 
-    for_ _output $ lift . output
+    lift $ traverse_ doOutput _output
 
 main :: IO ()
 main = do

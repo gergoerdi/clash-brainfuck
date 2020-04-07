@@ -39,8 +39,8 @@ instance (Monad m) => MonadBFMemory (BFVec m) where
     writeRAM addr x = BFVec $ modify $ replace addr x
 
 instance (MonadBFIO m) => MonadBFIO (BFVec m) where
-    input = BFVec . lift $ input
-    output = BFVec . lift . output
+    doInput = BFVec . lift $ doInput
+    doOutput = BFVec . lift . doOutput
 
 loadVec :: (KnownNat n) => [a] -> a -> Vec n a
 loadVec xs x0 = unfoldrI uncons xs

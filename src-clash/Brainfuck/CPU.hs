@@ -89,13 +89,13 @@ defaultOutput CPUState{..} = CPUOut
     }
 
 cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom (Raw CPUOut)
-cpu = mealyState step' initBFState
+cpu = mealyState cpuIO initBFState
 
-step' :: CPUIn -> State CPUState (Raw CPUOut)
-step' inp = do
+cpuIO :: CPUIn -> State CPUState (Raw CPUOut)
+cpuIO inp = do
     edits <- execWriterT (step inp)
-    def <- gets defaultOutput
-    return $ update def edits
+    out0 <- gets defaultOutput
+    return $ update out0 edits
 
 type CPU = WriterT (Barbie (CPUOut Covered) Last) (State CPUState)
 

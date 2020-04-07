@@ -27,9 +27,9 @@ interp = mapM_ $ \instr -> case instr of
     Decr -> modifyCell (subtract 1)
     Output -> do
         x <- getCell
-        lift $ output x
+        lift $ doOutput x
     Input -> do
-        x <- lift input
+        x <- lift doInput
         setCell x
     While prog -> whileM_ ((/= 0) <$> getCell) $ interp prog
   where
