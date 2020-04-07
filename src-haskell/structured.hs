@@ -53,9 +53,8 @@ parse (c:cs) = case c of
   where
     one instr = fmap (instr:) $ parse cs
 
-hello = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-."
-
 main :: IO ()
 main = do
-    evalStateT (interp $ snd $ parse hello) ([], L.repeat 0)
+    prog <- snd . parse <$> prepareIO
+    evalStateT (interp prog) ([], L.replicate 30000 0)
     putStrLn ""

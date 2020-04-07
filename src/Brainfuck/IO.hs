@@ -4,6 +4,9 @@ import Prelude
 import Brainfuck.Types
 import Data.Char
 import Control.Monad.State
+import Data.Maybe
+import System.IO
+import System.Environment
 
 class (Monad m) => MonadBFIO m where
     doOutput :: Cell -> m ()
@@ -16,3 +19,13 @@ instance MonadBFIO IO where
 instance (MonadBFIO m) => MonadBFIO (StateT s m) where
     doOutput = lift . doOutput
     doInput = lift doInput
+
+hello :: String
+hello = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-."
+
+prepareIO :: IO String
+prepareIO = do
+    hSetBuffering stdout NoBuffering
+
+    fileName <- listToMaybe <$> getArgs
+    maybe (return hello) readFile fileName

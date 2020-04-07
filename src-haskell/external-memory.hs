@@ -94,9 +94,8 @@ interp1 instr = gets phase >>= \case
         let (top, stack') = pop (stack st)
         in st{ pc = top - 1, stack = stack' }
 
-hello = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-."
-
 main :: IO ()
 main = do
-    runBFVec (fromIntegral . ord <$> loadVec hello '\0') $ evalStateT interp initBFState
+    prog <- prepareIO
+    runBFVec (fromIntegral . ord <$> loadVec prog '\0') $ evalStateT interp initBFState
     putStrLn ""

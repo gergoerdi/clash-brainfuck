@@ -7,12 +7,10 @@ import Brainfuck.Types
 import Brainfuck.IO
 import Brainfuck.Memory
 
-import qualified Data.ByteString as BS
-import System.IO
+import Data.Char (ord)
 import Data.Foldable (traverse_)
 import Control.Monad.State.Strict
 import Control.Lens
-
 
 simulateCPU :: (MonadBFMemory m, MonadBFIO m) => StateT (CPUState, Raw CPUOut) m ()
 simulateCPU = do
@@ -36,10 +34,8 @@ simulateCPU = do
 
 main :: IO ()
 main = do
-    hSetBuffering stdout NoBuffering
+    prog <- prepareIO
 
-    prog <- BS.readFile "hello.bf"
-
-    runBFVec (loadVec (BS.unpack prog) 0) $
+    runBFVec (fromIntegral . ord <$> loadVec prog '\0') $
       flip evalStateT (initBFState, defaultOutput initBFState) $
         forever simulateCPU

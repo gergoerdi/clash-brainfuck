@@ -11,7 +11,6 @@ import Data.Word
 import Control.Monad.State
 import Control.Monad.Loops (whileJust_)
 import Data.Array
-import Data.Maybe (isJust)
 import Data.List as L
 
 data Phase
@@ -77,8 +76,6 @@ interp1 instr = gets phase >>= \case
     popPC = modify $ \st@MkBFMachine{ stack = top:stack} ->
         st{ pc = top - 1, stack = stack }
 
-hello = "+[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-."
-
 fetchFrom :: (Monad m) => String -> (Int -> m (Maybe Char))
 fetchFrom s = \i -> return $ do
     guard $ inRange (bounds arr) i
@@ -88,5 +85,6 @@ fetchFrom s = \i -> return $ do
 
 main :: IO ()
 main = do
-    evalStateT (interp (fetchFrom hello)) initBFMachine
+    prog <- prepareIO
+    evalStateT (interp (fetchFrom prog)) initBFMachine
     putStrLn ""
