@@ -111,7 +111,7 @@ popPC = do
     stack .= stack'
 
 step :: CPUIn -> CPU ()
-step CPUIn{..} = use phase >>= \case
+step ~CPUIn{..} = use phase >>= \case
     Halt -> return ()
     Init -> phase .= Exec
     Skip depth -> fetch >>= \case
