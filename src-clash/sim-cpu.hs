@@ -36,6 +36,11 @@ main :: IO ()
 main = do
     prog <- prepareIO
 
-    runBFVec (fromIntegral . ord <$> loadVec prog '\0') $
-      flip evalStateT (undefined, initBFState) $
-        forever simulateCPU
+    runBFVec (fromIntegral . ord <$> loadVec prog '\0') $ do
+        let initInput = CPUIn
+                { instr = 0
+                , memRead = 0
+                , outputAck = False
+                , input = Nothing
+                }
+        flip evalStateT (initInput, initBFState) $ forever simulateCPU
