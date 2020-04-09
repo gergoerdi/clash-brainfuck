@@ -18,6 +18,7 @@ dependencies:
   - barbies-th
   - lens
   - bytestring
+  - temporary
 
 default-extensions:
   - BinaryLiterals
@@ -67,3 +68,9 @@ executables:
       - src
       - src-clash
     main: sim-cpu.hs
+
+  bf-sim-logicboard:
+    source-dirs:
+      - src
+      - src-clash
+    main: sim-logicboard.hs
