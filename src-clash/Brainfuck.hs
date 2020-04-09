@@ -36,7 +36,7 @@ topEntity = withResetEnableGen board
         , reverse <$> cols
         )
       where
-        (inputNeeded, output) = logicBoard (pure Nothing) ack
+        (inputNeeded, output) = logicBoard "hello.rom" (pure Nothing) ack
         ack = isRising False $ debounce (SNat @(Milliseconds 5)) False $
             fromActive <$> btn
 
@@ -84,15 +84,16 @@ keymap =
 
 logicBoard
     :: forall dom. (HiddenClockResetEnable dom)
-    => Signal dom (Maybe Cell)
+    => FilePath
+    -> Signal dom (Maybe Cell)
     -> Signal dom Bool
     -> (Signal dom Bool, Signal dom (Maybe Cell))
-logicBoard inputValue ack = (view inputNeeded <$> cpuOut, view output <$> cpuOut)
+logicBoard romFile inputValue ack = (view inputNeeded <$> cpuOut, view output <$> cpuOut)
   where
     cpuOut = cpu cpuIn
 
     ramRead = withStart 0 $ blockRam1 NoClearOnReset (SNat @30_000) 0 ramAddr ramWrite
-    romRead = withStart 0 $ unpack <$> romFilePow2 "hello.rom" romAddr
+    romRead = withStart 0 $ unpack <$> romFilePow2 romFile romAddr
 
     cpuIn = do
         instr <- romRead
