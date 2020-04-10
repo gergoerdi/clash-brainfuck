@@ -14,6 +14,19 @@ import Data.Foldable (traverse_)
 import System.IO.Temp
 import Data.List as L
 
+driveIO :: ([i] -> [o]) -> i -> IO ((o -> IO i) -> IO ())
+driveIO f input0 = do
+    inChan <- newChan
+    writeChan inChan input0
+
+    ins <- getChanContents inChan
+    outs <- newMVar $ f ins
+
+    return $ \world -> do
+        modifyMVar_ outs $ \(out:outs) -> do
+            world out >>= writeChan inChan
+            return outs
+
 world :: (MonadBFIO m) => (Bool, Maybe Cell) -> m (Maybe Cell, Bool)
 world (inputNeeded, output) = do
     traverse_ doOutput output
@@ -26,13 +39,8 @@ main = withSystemTempFile "brainfuck-.rom" $ \romFile romHandle -> do
     hPutStr romHandle $ unlines $ binLines (Just (snatToNum (SNat @ProgSize))) prog
     hClose romHandle
 
-    inChan <- newChan
-    writeChan inChan (Nothing, False)
-    ins <- getChanContents inChan
-    let outs = simulateB @System (uncurry $ logicBoard romFile) ins
-
-    forM_ outs $ \out -> do
-        writeChan inChan =<< world out
+    sim <- driveIO (simulateB @System (uncurry $ logicBoard romFile)) undefined
+    forever $ sim world
 
 binLines :: Maybe Int -> [Word8] -> [String]
 binLines size bs = L.map (L.filter (/= '_') . show . pack) bytes
