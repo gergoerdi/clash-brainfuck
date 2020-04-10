@@ -4,6 +4,7 @@ module Brainfuck.Memory where
 import Clash.Prelude hiding (lift)
 
 import Data.Word
+import Data.Char (ord)
 import Brainfuck.Types
 import Brainfuck.IO
 
@@ -47,3 +48,6 @@ loadVec xs x0 = unfoldrI uncons xs
   where
     uncons (x:xs) = (x, xs)
     uncons [] = (x0, [])
+
+stringToROM :: (Functor f) => f Char -> f Word8
+stringToROM = fmap (fromIntegral . ord)

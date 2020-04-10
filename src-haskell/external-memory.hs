@@ -97,5 +97,5 @@ interp1 instr = gets phase >>= \case
 main :: IO ()
 main = do
     prog <- prepareIO
-    runBFVec (fromIntegral . ord <$> loadVec prog '\0') $ evalStateT interp initBFState
+    runBFVec (stringToROM $ loadVec prog '\0') $ evalStateT interp initBFState
     putStrLn ""

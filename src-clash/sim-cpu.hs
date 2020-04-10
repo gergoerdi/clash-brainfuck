@@ -36,7 +36,7 @@ main :: IO ()
 main = do
     prog <- prepareIO
 
-    runBFVec (fromIntegral . ord <$> loadVec prog '\0') $ do
+    runBFVec (stringToROM $ loadVec prog '\0') $ do
         let initInput = CPUIn
                 { instr = 0
                 , memRead = 0
