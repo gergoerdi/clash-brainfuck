@@ -14,8 +14,8 @@ import Data.Foldable (traverse_)
 
 import Data.Monoid (Last(..))
 
-import Control.Monad.Writer.Strict
-import Control.Monad.State.Strict
+import Control.Monad.Writer
+import Control.Monad.State
 import Control.Lens hiding (Index, assign)
 
 import Barbies
@@ -37,8 +37,8 @@ update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie e
 data CPUIn = CPUIn
     { instr :: !Word8
     , memRead :: !Cell
-    , outputAck :: !Bool
-    , input :: !(Maybe Cell)
+    , outputAck :: Bool
+    , input :: Maybe Cell
     }
 
 declareBareB [d|
@@ -62,10 +62,10 @@ data Phase
     deriving (Show, Generic, NFDataX)
 
 data CPUState = CPUState
-    { _phase :: !Phase
-    , _pc :: !PC
-    , _stack :: !(Stack StackSize PC)
-    , _ptr :: !Ptr
+    { _phase :: Phase
+    , _pc :: PC
+    , _stack :: (Stack StackSize PC)
+    , _ptr :: Ptr
     }
     deriving (Generic, NFDataX)
 makeLenses ''CPUState

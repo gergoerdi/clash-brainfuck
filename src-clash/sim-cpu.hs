@@ -9,7 +9,7 @@ import Brainfuck.Memory
 
 import Data.Char (ord)
 import Data.Foldable (traverse_)
-import Control.Monad.State.Strict
+import Control.Monad.State
 import Control.Lens
 import Control.Monad
 
