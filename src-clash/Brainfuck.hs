@@ -88,12 +88,12 @@ logicBoard
     -> Signal dom (Maybe Cell)
     -> Signal dom Bool
     -> (Signal dom Bool, Signal dom (Maybe Cell))
-logicBoard romFile inputValue ack = (view inputNeeded <$> cpuOut, view output <$> cpuOut)
+logicBoard programFile inputValue ack = (view inputNeeded <$> cpuOut, view output <$> cpuOut)
   where
     cpuOut = cpu cpuIn
 
     ramRead = withStart 0 $ blockRam1 NoClearOnReset (SNat @30_000) 0 ramAddr ramWrite
-    romRead = withStart 0 $ unpack <$> romFilePow2 romFile romAddr
+    romRead = withStart 0 $ unpack <$> romFilePow2 programFile romAddr
 
     cpuIn = do
         instr <- romRead
@@ -106,11 +106,5 @@ logicBoard romFile inputValue ack = (view inputNeeded <$> cpuOut, view output <$
 
     ramAddr = view memAddr <$> cpuOut
     ramWrite = packWrite <$> ramAddr <*> (view memWrite <$> cpuOut)
-
-packWrite :: addr -> Maybe val -> Maybe (addr, val)
-packWrite addr val = (addr,) <$> val
-
-withStart :: (HiddenClockResetEnable dom) => Signal dom a -> Signal dom a -> Signal dom a
-withStart = mux (register True $ pure False)
 
 makeTopEntity 'topEntity

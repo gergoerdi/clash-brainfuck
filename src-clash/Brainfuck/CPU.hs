@@ -37,8 +37,8 @@ update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie e
 data CPUIn = CPUIn
     { instr :: !Word8
     , memRead :: !Cell
-    , outputAck :: Bool
-    , input :: Maybe Cell
+    , outputAck :: !Bool
+    , input :: !(Maybe Cell)
     }
 
 declareBareB [d|
