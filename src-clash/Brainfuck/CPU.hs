@@ -9,8 +9,6 @@ import Brainfuck.Stack
 import Clash.Prelude
 import RetroClash.Utils
 import Control.Monad
-import Data.Maybe
-import Data.Char
 import Data.Word
 import Data.Foldable (traverse_)
 
@@ -72,7 +70,8 @@ data CPUState = CPUState
     deriving (Generic, NFDataX)
 makeLenses ''CPUState
 
-initBFState = CPUState
+initCPUState :: CPUState
+initCPUState = CPUState
     { _phase = Init
     , _pc = 0
     , _stack = Stack (pure 0) 0
@@ -89,7 +88,7 @@ defaultOutput CPUState{..} = CPUOut
     }
 
 cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom (Raw CPUOut)
-cpu = mealyState cpuIO initBFState
+cpu = mealyState cpuIO initCPUState
 
 cpuIO :: CPUIn -> State CPUState (Raw CPUOut)
 cpuIO inp = do

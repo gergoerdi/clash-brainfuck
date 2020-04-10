@@ -53,6 +53,8 @@ source-dirs:
   - src
   - src-haskell
 
+ghc-options: -rtsopts
+
 executables:
   bf-structured:
     main: structured.hs

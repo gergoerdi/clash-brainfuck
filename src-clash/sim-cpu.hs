@@ -43,4 +43,4 @@ main = do
                 , outputAck = False
                 , input = Nothing
                 }
-        flip evalStateT (initInput, initBFState) $ forever simulateCPU
+        flip evalStateT (initInput, initCPUState) $ forever simulateCPU

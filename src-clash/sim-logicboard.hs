@@ -6,7 +6,6 @@ import Brainfuck.IO
 import Brainfuck.Memory (ProgSize, stringToROM)
 
 import Control.Concurrent
-import Data.Char
 import Data.Word
 import System.IO
 import Control.Monad
