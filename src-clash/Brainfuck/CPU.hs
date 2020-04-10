@@ -88,10 +88,10 @@ defaultOutput CPUState{..} = CPUOut
     }
 
 cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom (Raw CPUOut)
-cpu = mealyState cpuIO initCPUState
+cpu = mealyState cpuMachine initCPUState
 
-cpuIO :: CPUIn -> State CPUState (Raw CPUOut)
-cpuIO inp = do
+cpuMachine :: CPUIn -> State CPUState (Raw CPUOut)
+cpuMachine inp = do
     edits <- execWriterT (step inp)
     out0 <- gets defaultOutput
     return $ update out0 edits

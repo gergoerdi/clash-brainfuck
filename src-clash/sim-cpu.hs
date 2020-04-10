@@ -13,8 +13,8 @@ import Control.Monad.State
 import Control.Lens
 import Control.Monad
 
-cpuOI :: (MonadBFMemory m, MonadBFIO m) => Raw CPUOut -> m CPUIn
-cpuOI CPUOut{..} = do
+world :: (MonadBFMemory m, MonadBFIO m) => Raw CPUOut -> m CPUIn
+world CPUOut{..} = do
     instr <- readProgROM _progAddr
     memRead <- readRAM _memAddr
     input <- if _inputNeeded then Just <$> doInput else return Nothing
@@ -28,8 +28,8 @@ cpuOI CPUOut{..} = do
 simulateCPU :: (MonadBFMemory m, MonadBFIO m) => StateT (CPUIn, CPUState) m ()
 simulateCPU = do
     (inp, s) <- get
-    let (out, s') = runState (cpuIO inp) s
-    inp' <- lift $ cpuOI out
+    let (out, s') = runState (cpuMachine inp) s
+    inp' <- lift $ world out
     put (inp', s')
 
 main :: IO ()
