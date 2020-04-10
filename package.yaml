@@ -8,6 +8,7 @@ dependencies:
   - clash-lib
   - clash-ghc
   - retroclash-lib
+  - retroclash-sim
   - shake
   - mustache == 2.3.1
 
