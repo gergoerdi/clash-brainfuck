@@ -28,7 +28,9 @@ main = withSystemTempFile "brainfuck-.rom" $ \romFile romHandle -> do
     hPutStr romHandle $ unlines $ binLines (Just (snatToNum (SNat @ProgSize))) prog
     hClose romHandle
 
-    sim <- driveIO_ (simulateB @System (uncurry $ logicBoard romFile)) undefined
+    sim <- simulateIO_ @System
+           (bundle . uncurry (logicBoard romFile) . unbundle)
+           (Nothing, False)
     forever $ sim world
 
 binLines :: Maybe Int -> [Word8] -> [String]
