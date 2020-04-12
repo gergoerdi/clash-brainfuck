@@ -5,16 +5,8 @@ category: hardware
 dependencies:
   - base
   - clash-prelude
-  - clash-lib
-  - clash-ghc
-  - retroclash-lib
-  - retroclash-sim
-  - shake
-  - mustache == 2.3.1
 
   - mtl
-  - array
-  - monad-loops
   - barbies
   - barbies-th
   - lens
@@ -54,18 +46,9 @@ source-dirs:
   - src
   - src-haskell
 
-ghc-options: -rtsopts
+ghc-options: -rtsopts -with-rtsopts=-M4M
 
 executables:
-  bf-structured:
-    main: structured.hs
-
-  bf-bytecode:
-    main: bytecode.hs
-
-  bf-external-memory:
-    main: external-memory.hs
-
   bf-sim-cpu:
     source-dirs:
       - src
