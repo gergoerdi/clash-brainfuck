@@ -1,0 +1,3 @@
+[submodule "clash-compiler"]
+	path = clash-compiler
+	url = git@github.com:gergoerdi/clash-compiler.git
