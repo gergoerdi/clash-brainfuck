@@ -35,10 +35,10 @@ update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie e
     update1 initial edit = maybe initial Identity (getLast edit)
 
 data CPUIn = CPUIn
-    { instr :: !Word8
-    , memRead :: !Cell
-    , outputAck :: !Bool
-    , input :: !(Maybe Cell)
+    { instr :: Word8
+    , memRead :: Cell
+    , outputAck :: Bool
+    , input :: Maybe Cell
     }
 
 declareBareB [d|

@@ -49,7 +49,7 @@ mealyStateB
     => (i -> State s o) -> s -> (Unbundled dom i -> Unbundled dom o)
 mealyStateB f s0 = unbundle . mealyState f s0 . bundle
 
-enable :: (Applicative f) => f Bool -> f a -> f (Maybe a)
+enable :: Signal dom Bool -> Signal dom a -> Signal dom (Maybe a)
 enable en x = mux en (Just <$> x) (pure Nothing)
 
 packWrite :: addr -> Maybe val -> Maybe (addr, val)
