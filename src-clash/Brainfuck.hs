@@ -32,47 +32,70 @@ topEntity
 topEntity = withResetEnableGen board
   where
     board btn rows =
-        ( driveSS display (reverse <$> digits)
+        ( display outbuf (enable inputNeededBuf inbuf)
         , reverse <$> cols
         )
       where
-        (inputNeeded, output) = logicBoard "hello.rom" (pure Nothing) ack
+        (inputNeeded, output) = logicBoard "hello.rom" (enable ack inbuf) ack
         ack = isRising False $ debounce (SNat @(Milliseconds 5)) False $
             fromActive <$> btn
 
-        ui :: _ (Maybe Bool)
-        ui = do
-            inputNeeded <- inputNeeded
-            output <- output
-            pure $ case (inputNeeded, output) of
-                (True, _) -> Just True
-                (_, Just{}) -> Just False
-                _ -> Nothing
+        (cols, key) = inputKeypad keymap rows
 
-        io :: _ (Vec 2 (Maybe (Unsigned 4)))
-        io = do
+        outbuf = regMaybe Nothing $ do
+            clear <- ack
             output <- output
             pure $ case output of
-                Nothing -> Nothing :> Nothing :> Nil
-                Just x -> let (hi, lo) = bitCoerce x
-                          in Just hi :> Just lo :> Nil
+                Just x -> Just (Just x)
+                _ -> if clear then Just Nothing else Nothing
 
-        digits :: _ (Vec 4 (Maybe (Either Bool (Unsigned 4))))
-        digits = bundle $
-            (pure Nothing) :>
-            (fmap Left <$> ui) :>
-            unbundle (map (fmap Right) <$> io)
+        inputNeededBuf = regMaybe False $ do
+            clear <- ack
+            inputNeeded <- inputNeeded
+            pure $ case inputNeeded of
+                True -> Just True
+                _ -> if clear then Just False else Nothing
 
-        input = inputKeypad keymap
-        (cols, key) = input rows
-        -- cmdKey = (keyToCmd =<<) <$> key
-
-        display :: Either Bool (Unsigned 4) -> _
-        display (Left isInput) = (if isInput then i else o, False)
+        inbuf = register 0x00 $ do
+            ack <- ack
+            digit <- key
+            current <- inbuf
+            pure $ if ack then 0x00 else maybe current (shiftIn current) digit
           where
-            i = False :> False :> True :> False :> False :> False :> False :> Nil
-            o = False :> False :> True :> True :> True :> False :> True :> Nil
-        display (Right digit) = (encodeHexSS digit, False)
+            shiftIn :: Cell -> Unsigned 4 -> Cell
+            shiftIn x d = bitCoerce (lo, d)
+              where
+                (hi, lo) = bitCoerce x :: (Unsigned 4, Unsigned 4)
+
+data SSChar
+    = SSHex (Unsigned 4)
+    | SSOutput
+    | SSInput
+
+displaySS :: SSChar -> Vec 7 Bool
+displaySS (SSHex digit) = encodeHexSS digit
+displaySS SSOutput = False :> False :> True :> True :> True :> False :> True :> Nil
+displaySS SSInput = False :> False :> True :> False :> False :> False :> False :> Nil
+
+displayChars :: Maybe Cell -> Maybe Cell -> Vec 4 (Maybe SSChar)
+displayChars output input = case (output, input) of
+    (Just o, _) -> Nothing :> Just SSOutput  :> (Just <$> digits o)
+    (_, Just i) -> Nothing :> Just SSInput :> (Just <$> digits i)
+    _           -> repeat Nothing
+  where
+    digits :: Cell -> Vec 2 SSChar
+    digits x = SSHex hi :> SSHex lo :> Nil
+      where
+        (hi, lo) = bitCoerce x
+
+display
+    :: (HiddenClockResetEnable dom, _)
+    => Signal dom (Maybe Cell)
+    -> Signal dom (Maybe Cell)
+    -> SevenSegment dom 4 anodes segments dp
+display outbuf inbuf = driveSS (\c -> (displaySS c, False)) (reverse <$> chars)
+  where
+    chars = displayChars <$> outbuf <*> inbuf
 
 keymap :: Matrix 4 4 (Unsigned 4)
 keymap =
