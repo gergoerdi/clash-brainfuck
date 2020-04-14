@@ -22,6 +22,7 @@ clashProject = ClashProject
     , topName = "Top"
     , clashFlags =
         [ "-i../retroclash-lib/src"
+        , "-i../src"
         , "-Wno-partial-type-signatures"
         , "-fclash-inline-limit=100"
         ]
@@ -45,6 +46,6 @@ main = clashShake clashProject $ do
     xilinxVivado kit nexysA750T "target/nexys-a7-50t" "nexys-a7-50t"
 
     lift $ do
-      buildDir </> "hello.rom" %> hexImage (Just 0x1000) "hello.bf"
+      buildDir </> "hello.rom" %> binImage (Just 0x1000) "hello.bf"
 
     return ()
