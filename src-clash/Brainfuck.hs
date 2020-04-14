@@ -37,10 +37,7 @@ topEntity = withResetEnableGen board
         )
       where
         (inputNeeded, output) = logicBoard "hello.rom" (enable ack inbuf) ack
-        ack = isRising False $ debounce (SNat @(Milliseconds 5)) False $
-            fromActive <$> btn
-
-        (cols, key) = inputKeypad keymap rows
+        (cols, ack, inbuf) = inputs btn rows
 
         outbuf = regMaybe Nothing $ do
             clear <- ack
@@ -55,17 +52,6 @@ topEntity = withResetEnableGen board
             pure $ case inputNeeded of
                 True -> Just True
                 _ -> if clear then Just False else Nothing
-
-        inbuf = register 0x00 $ do
-            ack <- ack
-            digit <- key
-            current <- inbuf
-            pure $ if ack then 0x00 else maybe current (shiftIn current) digit
-          where
-            shiftIn :: Cell -> Unsigned 4 -> Cell
-            shiftIn x d = bitCoerce (lo, d)
-              where
-                (hi, lo) = bitCoerce x :: (Unsigned 4, Unsigned 4)
 
 data SSChar
     = SSHex (Unsigned 4)
@@ -96,6 +82,33 @@ display
 display outbuf inbuf = driveSS (\c -> (displaySS c, False)) (reverse <$> chars)
   where
     chars = displayChars <$> outbuf <*> inbuf
+
+inputs
+    :: (HiddenClockResetEnable dom, _)
+    => Signal dom (Active btn)
+    -> Signal dom (Vec 4 (Active row))
+    -> ( Signal dom (Vec 4 (Active col))
+       , Signal dom Bool
+       , Signal dom Cell
+       )
+inputs btn rows = (cols, ack, buffer)
+  where
+    ack = isRising False $ debounce (SNat @(Milliseconds 5)) False $
+          fromActive <$> btn
+
+    (cols, key) = inputKeypad keymap rows
+
+    buffer = register 0x00 $ do
+        ack <- ack
+        digit <- key
+        current <- buffer
+        pure $ if ack then 0x00 else maybe current (shiftIn current) digit
+      where
+        shiftIn :: Cell -> Unsigned 4 -> Cell
+        shiftIn x d = bitCoerce (lo, d)
+          where
+            (hi, lo) = bitCoerce x :: (Unsigned 4, Unsigned 4)
+
 
 keymap :: Matrix 4 4 (Unsigned 4)
 keymap =
