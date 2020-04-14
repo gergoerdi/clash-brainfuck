@@ -3,7 +3,7 @@ resolver: lts-15.2
 
 packages:
   - github: clash-lang/clash-compiler
-    commit: 702fea65584f57e0ff6cd19f3e80af92a27ed6e7
+    commit: 55757a8158d53ddb17ab8a81d37f22e584b3ea00
     subdirs:
       - clash-ghc
       - clash-prelude

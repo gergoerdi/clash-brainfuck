@@ -92,8 +92,8 @@ logicBoard programFile inputValue ack = (view inputNeeded <$> cpuOut, view outpu
   where
     cpuOut = cpu cpuIn
 
-    ramRead = withStart 0 $ blockRam1 NoClearOnReset (SNat @30_000) 0 ramAddr ramWrite
-    romRead = withStart 0 $ unpack <$> romFilePow2 programFile romAddr
+    ramRead = blockRam1 NoClearOnReset (SNat @30_000) 0 ramAddr ramWrite
+    romRead = unpack <$> romFilePow2 programFile romAddr
 
     cpuIn = do
         instr <- romRead
