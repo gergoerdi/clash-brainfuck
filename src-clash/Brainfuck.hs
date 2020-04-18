@@ -44,13 +44,6 @@ topEntity = withResetEnableGen board
         outbuf = getFirst <$> integrate ack (First <$> output)
         inputNeededBuf = getAny <$> integrate ack (Any <$> inputNeeded)
 
-integrate
-    :: (Monoid a, NFDataX a, HiddenClockResetEnable dom)
-    => Signal dom Bool -> Signal dom a -> Signal dom a
-integrate clear x = acc
-  where
-    acc = register mempty $ mux clear x $ mappend <$> acc <*> x
-
 data SSChar
     = SSHex (Unsigned 4)
     | SSOutput
