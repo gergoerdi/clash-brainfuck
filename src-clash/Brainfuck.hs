@@ -1,5 +1,4 @@
 {-# LANGUAGE PartialTypeSignatures, NumericUnderscores, ApplicativeDo, RecordWildCards #-}
-{-# LANGUAGE TupleSections #-}
 module Brainfuck where
 
 import Clash.Prelude
@@ -13,6 +12,7 @@ import RetroClash.SerialTx
 import Control.Monad
 import Data.Maybe
 import Data.Char
+import Data.Monoid (First(..), Any(..))
 import Control.Monad.State
 
 import Brainfuck.Types
@@ -39,19 +39,15 @@ topEntity = withResetEnableGen board
         (inputNeeded, output) = logicBoard "hello.rom" (enable ack inbuf) ack
         (cols, ack, inbuf) = inputs btn rows
 
-        outbuf = regMaybe Nothing $ do
-            clear <- ack
-            output <- output
-            pure $ case output of
-                Just x -> Just (Just x)
-                _ -> if clear then Just Nothing else Nothing
+        outbuf = getFirst <$> integrate ack (First <$> output)
+        inputNeededBuf = getAny <$> integrate ack (Any <$> inputNeeded)
 
-        inputNeededBuf = regMaybe False $ do
-            clear <- ack
-            inputNeeded <- inputNeeded
-            pure $ case inputNeeded of
-                True -> Just True
-                _ -> if clear then Just False else Nothing
+integrate
+    :: (Monoid a, NFDataX a, HiddenClockResetEnable dom)
+    => Signal dom Bool -> Signal dom a -> Signal dom a
+integrate clear x = acc
+  where
+    acc = register mempty $ mux clear x $ mappend <$> acc <*> x
 
 data SSChar
     = SSHex (Unsigned 4)
