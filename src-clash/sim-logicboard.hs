@@ -3,10 +3,10 @@ module Main where
 import Clash.Prelude
 import RetroClash.Sim.IO
 
-import Brainfuck
 import Brainfuck.Types (Cell)
 import Brainfuck.IO
 import Brainfuck.Memory (ProgSize, stringToROM)
+import Brainfuck.LogicBoard
 
 import Data.Word
 import System.IO
