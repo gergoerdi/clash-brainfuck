@@ -34,12 +34,13 @@ update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie e
     update1 :: Identity a -> Last a -> Identity a
     update1 initial edit = maybe initial Identity (getLast edit)
 
-data CPUIn = CPUIn
-    { romRead :: Word8
-    , ramRead :: Cell
-    , outputAck :: Bool
-    , input :: Maybe Cell
-    }
+declareBareB [d|
+  data CPUIn = CPUIn
+      { romRead :: Word8
+      , ramRead :: Cell
+      , outputAck :: Bool
+      , input :: Maybe Cell
+      } |]
 
 declareBareB [d|
   data CPUOut = CPUOut
@@ -87,10 +88,10 @@ defaultOutput CPUState{..} = CPUOut
     , _inputNeeded = False
     }
 
-cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom (Pure CPUOut)
-cpu = mealyState cpuMachine initCPUState
+cpu :: (HiddenClockResetEnable dom) => CPUIn Covered (Signal dom) -> CPUOut Covered (Signal dom)
+cpu = bdistribute' . fmap bcover . mealyState cpuMachine initCPUState . fmap bstrip . bsequence'
 
-cpuMachine :: CPUIn -> State CPUState (Pure CPUOut)
+cpuMachine :: Pure CPUIn -> State CPUState (Pure CPUOut)
 cpuMachine inp = do
     edits <- execWriterT (step inp)
     out0 <- gets defaultOutput
@@ -109,7 +110,7 @@ popPC = do
     pc .= pc'
     stack .= stack'
 
-step :: CPUIn -> CPU ()
+step :: Pure CPUIn -> CPU ()
 step CPUIn{..} = use phase >>= \case
     Halt -> return ()
     Init -> phase .= Exec

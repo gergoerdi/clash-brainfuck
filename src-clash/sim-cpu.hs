@@ -13,7 +13,7 @@ import Control.Monad.State
 import Control.Lens
 import Control.Monad
 
-world :: (MonadBFMemory m, MonadBFIO m) => Pure CPUOut -> m CPUIn
+world :: (MonadBFMemory m, MonadBFIO m) => Pure CPUOut -> m (Pure CPUIn)
 world CPUOut{..} = do
     romRead <- readProgROM _romAddr
     ramRead <- readRAM _ramAddr
@@ -25,7 +25,7 @@ world CPUOut{..} = do
 
     return CPUIn{..}
 
-simulateCPU :: (MonadBFMemory m, MonadBFIO m) => StateT (CPUIn, CPUState) m ()
+simulateCPU :: (MonadBFMemory m, MonadBFIO m) => StateT (Pure CPUIn, CPUState) m ()
 simulateCPU = do
     (inp, s) <- get
     let (out, s') = runState (cpuMachine inp) s
