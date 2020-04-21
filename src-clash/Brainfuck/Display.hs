@@ -11,15 +11,21 @@ data SSChar
     | SSOutput
     | SSInput
 
-displaySS :: SSChar -> Vec 7 Bool
-displaySS (SSHex digit) = encodeHexSS digit
-displaySS SSOutput = False :> False :> True :> True :> True :> False :> True :> Nil
-displaySS SSInput = False :> False :> True :> False :> False :> False :> False :> Nil
+iSS :: Vec 7 Bool
+iSS = False :> False :> True :> False :> False :> False :> False :> Nil
 
-displayChars :: Maybe Cell -> Maybe Cell -> Vec 4 (Maybe SSChar)
+oSS :: Vec 7 Bool
+oSS = False :> False :> True :> True :> True :> False :> True :> Nil
+
+displaySS :: SSChar -> (Vec 7 Bool, Bool)
+displaySS (SSHex digit) = (encodeHexSS digit, False)
+displaySS SSOutput = (oSS, True)
+displaySS SSInput = (iSS, True)
+
+displayChars :: Maybe Cell -> Maybe Cell -> Vec 3 (Maybe SSChar)
 displayChars output input = case (output, input) of
-    (Just o, _) -> Nothing :> Just SSOutput  :> (Just <$> digits o)
-    (_, Just i) -> Nothing :> Just SSInput :> (Just <$> digits i)
+    (Just o, _) -> Just SSOutput  :> (Just <$> digits o)
+    (_, Just i) -> Just SSInput :> (Just <$> digits i)
     _           -> repeat Nothing
   where
     digits :: Cell -> Vec 2 SSChar
@@ -31,7 +37,8 @@ display
     :: (HiddenClockResetEnable dom, _)
     => Signal dom (Maybe Cell)
     -> Signal dom (Maybe Cell)
-    -> SevenSegment dom 4 anodes segments dp
-display output inbuf = driveSS (\c -> (displaySS c, False)) chars
+    -> SevenSegment dom (k + 3) anodes segments dp
+display output inbuf = driveSS displaySS (pad <$> chars)
   where
     chars = displayChars <$> output <*> inbuf
+    pad xs = repeat Nothing ++ xs

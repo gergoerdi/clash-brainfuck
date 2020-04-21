@@ -6,6 +6,8 @@ import RetroClash.Utils
 import RetroClash.Keypad
 import RetroClash.Clock
 import Brainfuck.Types
+import Control.Monad (msum)
+import Data.Maybe (fromMaybe)
 
 inputs
     :: (HiddenClockResetEnable dom, _)
@@ -21,18 +23,21 @@ inputs btn rows = (cols, ack, buffer)
           fromActive <$> btn
 
     (cols, key) = inputKeypad keymap rows
+    buffer = bitCoerce <$> vecBuffer zero (enable ack $ pure zero) key
+    zero = repeat 0x0
 
-    buffer = register 0x00 $ do
-        ack <- ack
-        digit <- key
-        current <- buffer
-        pure $ if ack then 0x00 else maybe current (shiftIn current) digit
-      where
-        shiftIn :: Cell -> Unsigned 4 -> Cell
-        shiftIn x d = bitCoerce (lo, d)
-          where
-            (hi, lo) = bitCoerce x :: (Unsigned 4, Unsigned 4)
-
+vecBuffer
+    :: (KnownNat n, NFDataX a, HiddenClockResetEnable dom)
+    => Vec n a
+    -> Signal dom (Maybe (Vec n a))
+    -> Signal dom (Maybe a)
+    -> Signal dom (Vec n a)
+vecBuffer initial new digit = moore step id initial (bundle (new, digit))
+  where
+    step current (new, digit) = fromMaybe current . msum $
+        [ new
+        , (current <<+) <$> digit
+        ]
 
 keymap :: Matrix 4 4 (Unsigned 4)
 keymap =
