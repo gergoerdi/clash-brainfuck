@@ -17,12 +17,12 @@ logicBoard
     -> Signal dom (Maybe Cell)
     -> Signal dom Bool
     -> (Signal dom Bool, Signal dom (Maybe Cell))
-logicBoard programFile inputValue ack = (_inputNeeded <$> cpuOut, _output <$> cpuOut)
+logicBoard programFile inputValue ack = (_inputNeeded, _output)
   where
-    cpuOut = cpu cpuIn
+    CPUOut{..} = bdistribute' . fmap bcover $ cpu cpuIn
 
-    ramRead = blockRam1 ClearOnReset (SNat @30_000) 0 (_ramAddr <$> cpuOut) write
-    romRead = unpack <$> romFilePow2 programFile (_romAddr <$> cpuOut)
+    ramRead = blockRam1 ClearOnReset (SNat @30_000) 0 _ramAddr write
+    romRead = unpack <$> romFilePow2 programFile _romAddr
 
     cpuIn = do
         romRead <- romRead
@@ -31,4 +31,4 @@ logicBoard programFile inputValue ack = (_inputNeeded <$> cpuOut, _output <$> cp
         input <- inputValue
         pure $ CPUIn{..}
 
-    write = packWrite <$> (_ramAddr <$> cpuOut) <*> (_ramWrite <$> cpuOut)
+    write = packWrite <$> _ramAddr <*> _ramWrite

@@ -3,5 +3,7 @@ resolver: clash-HEAD.yaml
 extra-deps:
   - retroclash-lib
   - retroclash-sim
-  - barbies-2.0.0.0
-  - barbies-th-0.1
+
+  - barbies-2.0.1.0
+  - github: fumieval/barbies-th
+    commit: 040aac815b712d4cd2a9fa0990e8b0e23481a215

@@ -67,19 +67,26 @@ packages:
   original:
     hackage: shake-0.18.2
 - completed:
-    hackage: barbies-2.0.0.0@sha256:673a2554477aafb79f6836e3f2c00cb2f1309d205985a5151ec818a5186b3a60,4233
+    hackage: barbies-2.0.1.0@sha256:289c0ab2a8477dc09d70653f437b7b83caa8969cc007c866bc52606121cce3c1,4407
     pantry-tree:
-      size: 4126
-      sha256: 4399f288b19035903567fbf0ffc41c65b8de81480832539d0590f24837ac1c04
+      size: 4426
+      sha256: 154ccf6bf8816db6838d2b689ea821d818288a81b92b01e10c936536699f2e61
   original:
-    hackage: barbies-2.0.0.0
+    hackage: barbies-2.0.1.0
 - completed:
-    hackage: barbies-th-0.1@sha256:ae9497555658698690a0f238642af1715cd74a431e9c7f89cd54df83ee0ebe36,1046
+    size: 4774
+    url: https://github.com/fumieval/barbies-th/archive/040aac815b712d4cd2a9fa0990e8b0e23481a215.tar.gz
+    cabal-file:
+      size: 1050
+      sha256: 2e17fa7937d38527a6bdd29a0dca4c63312b52fc0b06dd431a6f9ef22ea3b309
+    name: barbies-th
+    version: 0.1.1
+    sha256: f820c764df6d04af0f6656363ed6f6ac4fa7a7898c4b68bd448a4875dbf92fba
     pantry-tree:
-      size: 370
-      sha256: 07a31dfd760e6648397f1c3f0a02fe436e08f04dc012acf5a03c64b78779ffea
+      size: 540
+      sha256: 03406a548fd67c4ec8aedd50003c70faeb562876d5d94de9d03d0936569ec778
   original:
-    hackage: barbies-th-0.1
+    url: https://github.com/fumieval/barbies-th/archive/040aac815b712d4cd2a9fa0990e8b0e23481a215.tar.gz
 snapshots:
 - completed:
     size: 492027

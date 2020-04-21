@@ -15,7 +15,7 @@ dependencies:
   - mtl
   - array
   - monad-loops
-  - barbies
+  - barbies ^>= 2.0.1
   - barbies-th
   - lens
   - bytestring
