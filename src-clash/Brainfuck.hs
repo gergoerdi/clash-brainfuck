@@ -11,8 +11,6 @@ import Brainfuck.LogicBoard
 import Brainfuck.Display
 import Brainfuck.Input
 
-instance NFDataX a => NFDataX (First a)
-
 topEntity
     :: "CLK"     ::: Clock System
     -> "BTN"     ::: Signal System (Active High)

@@ -5,53 +5,53 @@
 
 packages:
 - completed:
-    size: 1367645
+    size: 1373823
     subdir: clash-ghc
-    url: https://github.com/clash-lang/clash-compiler/archive/55757a8158d53ddb17ab8a81d37f22e584b3ea00.tar.gz
+    url: https://github.com/gergoerdi/clash-compiler/archive/f7794f6710295bb72f9bd75a68a7dc51de5e30e3.tar.gz
     cabal-file:
       size: 8070
-      sha256: 291db86adac5c29ee25891d887ac3882ec0fedeed6952ea8443e6cf8e582d6fc
+      sha256: bd43a531ea00b80c0aa07db9e3a55836ef7ffcdfa9f0ee0320f9b6791cf1514d
     name: clash-ghc
     version: 1.3.0
-    sha256: da3cf957661fa1b0477986b4f18fbf5467b4e1611bfd79d1715780c7a1bc3e8a
+    sha256: 3f7411ba008384fd5ef762b34cdbfe8f8b0a3a3dab61a93b1de394a4727caa83
     pantry-tree:
       size: 2842
-      sha256: eb7c23d61684e9024862978577b22865b71b4e218b924138cf37ca5ee2a6fbe9
+      sha256: 8ecefb9fe6456e07fe26596b632e1b6c4f5930a552d74ef40c215890613974cc
   original:
     subdir: clash-ghc
-    url: https://github.com/clash-lang/clash-compiler/archive/55757a8158d53ddb17ab8a81d37f22e584b3ea00.tar.gz
+    url: https://github.com/gergoerdi/clash-compiler/archive/f7794f6710295bb72f9bd75a68a7dc51de5e30e3.tar.gz
 - completed:
-    size: 1367645
+    size: 1373823
     subdir: clash-prelude
-    url: https://github.com/clash-lang/clash-compiler/archive/55757a8158d53ddb17ab8a81d37f22e584b3ea00.tar.gz
+    url: https://github.com/gergoerdi/clash-compiler/archive/f7794f6710295bb72f9bd75a68a7dc51de5e30e3.tar.gz
     cabal-file:
-      size: 15280
-      sha256: c74e6cc479bcdd1de96a7a3083e48c6f89517b9366948eed463de9033f939a40
+      size: 15349
+      sha256: 2a2790e52c4271e798b6fa25ca3f8a2901e10c40008f4b72fe420496aa2d25ce
     name: clash-prelude
     version: 1.3.0
-    sha256: da3cf957661fa1b0477986b4f18fbf5467b4e1611bfd79d1715780c7a1bc3e8a
+    sha256: 3f7411ba008384fd5ef762b34cdbfe8f8b0a3a3dab61a93b1de394a4727caa83
     pantry-tree:
       size: 12800
-      sha256: 44bdedd5e100357f727864f7d4eb64e57e0fe6f78b107579a9148b937c74d964
+      sha256: 8c7c4912b63de59ffba62c1e5e5a3491a3040395eb1ec3ab8b1b083df7cfa1c2
   original:
     subdir: clash-prelude
-    url: https://github.com/clash-lang/clash-compiler/archive/55757a8158d53ddb17ab8a81d37f22e584b3ea00.tar.gz
+    url: https://github.com/gergoerdi/clash-compiler/archive/f7794f6710295bb72f9bd75a68a7dc51de5e30e3.tar.gz
 - completed:
-    size: 1367645
+    size: 1373823
     subdir: clash-lib
-    url: https://github.com/clash-lang/clash-compiler/archive/55757a8158d53ddb17ab8a81d37f22e584b3ea00.tar.gz
+    url: https://github.com/gergoerdi/clash-compiler/archive/f7794f6710295bb72f9bd75a68a7dc51de5e30e3.tar.gz
     cabal-file:
       size: 10901
-      sha256: e9edd85b182dcdf8292ac7dca4f92ac854a350851dd69f2219e3f8ba86e9059e
+      sha256: 0ad24086c42948ad13eda2834678b5c9468745e811411274d6f27202b4931083
     name: clash-lib
     version: 1.3.0
-    sha256: da3cf957661fa1b0477986b4f18fbf5467b4e1611bfd79d1715780c7a1bc3e8a
+    sha256: 3f7411ba008384fd5ef762b34cdbfe8f8b0a3a3dab61a93b1de394a4727caa83
     pantry-tree:
       size: 16625
-      sha256: 2dc178ed16ff78630dd23032a0dd81be133fae070b62620d7d80ea845bdbe04e
+      sha256: 3c4b79a4ebd644469a042e9efd7eb1b4b14683e654a8742bfd19c0a0b951b1cd
   original:
     subdir: clash-lib
-    url: https://github.com/clash-lang/clash-compiler/archive/55757a8158d53ddb17ab8a81d37f22e584b3ea00.tar.gz
+    url: https://github.com/gergoerdi/clash-compiler/archive/f7794f6710295bb72f9bd75a68a7dc51de5e30e3.tar.gz
 - completed:
     hackage: concurrent-supply-0.1.8@sha256:9373f4868ad28936a7b93781b214ef4afdeacf377ef4ac729583073491c9f9fb,1627
     pantry-tree:
@@ -82,7 +82,7 @@ packages:
     hackage: barbies-th-0.1
 snapshots:
 - completed:
-    size: 491372
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/2.yaml
-    sha256: a98d091d911606d0d8adccbeb811b81bbd8cc2d888f99ef9e273350e8e9692a8
-  original: lts-15.2
+    size: 492027
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/15/9.yaml
+    sha256: 11394dc975e96c2fea90f7f2b3229630d46351a092ebcec78f0a56403930b429
+  original: lts-15.9
