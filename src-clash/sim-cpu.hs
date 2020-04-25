@@ -15,11 +15,11 @@ import Control.Monad
 
 world :: (MonadBFMemory m, MonadBFIO m) => Raw CPUOut -> m CPUIn
 world CPUOut{..} = do
-    instr <- readProgROM _progAddr
-    memRead <- readRAM _memAddr
+    romRead <- readProgROM _romAddr
+    ramRead <- readRAM _ramAddr
     input <- if _inputNeeded then Just <$> doInput else return Nothing
 
-    traverse_ (writeRAM _memAddr) _memWrite
+    traverse_ (writeRAM _ramAddr) _ramWrite
     traverse_ doOutput _output
     outputAck <- return True
 
@@ -38,8 +38,8 @@ main = do
 
     runBFVec (stringToROM $ loadVec prog '\0') $ do
         let initInput = CPUIn
-                { instr = 0
-                , memRead = 0
+                { romRead = 0
+                , ramRead = 0
                 , outputAck = False
                 , input = Nothing
                 }

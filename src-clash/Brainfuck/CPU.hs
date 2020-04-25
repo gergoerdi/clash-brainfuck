@@ -35,17 +35,17 @@ update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie e
     update1 initial edit = maybe initial Identity (getLast edit)
 
 data CPUIn = CPUIn
-    { instr :: Word8
-    , memRead :: Cell
+    { romRead :: Word8
+    , ramRead :: Cell
     , outputAck :: Bool
     , input :: Maybe Cell
     }
 
 declareBareB [d|
   data CPUOut = CPUOut
-      { _progAddr :: PC
-      , _memAddr :: Ptr
-      , _memWrite :: Maybe Cell
+      { _romAddr :: PC
+      , _ramAddr :: Ptr
+      , _ramWrite :: Maybe Cell
       , _output :: Maybe Cell
       , _inputNeeded :: Bool
       } |]
@@ -80,9 +80,9 @@ initCPUState = CPUState
 
 defaultOutput :: CPUState -> Raw CPUOut
 defaultOutput CPUState{..} = CPUOut
-    { _progAddr = _pc
-    , _memAddr = _ptr
-    , _memWrite = Nothing
+    { _romAddr = _pc
+    , _ramAddr = _ptr
+    , _ramWrite = Nothing
     , _output = Nothing
     , _inputNeeded = False
     }
@@ -120,11 +120,11 @@ step CPUIn{..} = use phase >>= \case
     Exec -> fetch >>= \case
         '>' -> ptr %= nextIdx
         '<' -> ptr %= prevIdx
-        '+' -> writeCell $ nextIdx memRead
-        '-' -> writeCell $ prevIdx memRead
-        '.' -> outputCell memRead
+        '+' -> writeCell $ nextIdx ramRead
+        '-' -> writeCell $ prevIdx ramRead
+        '.' -> outputCell ramRead
         ',' -> startInput
-        '[' -> if memRead /= 0 then pushPC else phase .= Skip 0
+        '[' -> if ramRead /= 0 then pushPC else phase .= Skip 0
         ']' -> popPC
         '\0' -> phase .= Halt
         _ -> return ()
@@ -134,7 +134,7 @@ step CPUIn{..} = use phase >>= \case
   where
     fetch = do
         pc += 1
-        return $ ascii instr
+        return $ ascii romRead
 
 outputCell :: Cell -> CPU ()
 outputCell x = do
@@ -143,7 +143,7 @@ outputCell x = do
 
 writeCell :: Cell -> CPU ()
 writeCell x = do
-    memWrite .:= Just x
+    ramWrite .:= Just x
     phase .= WaitWrite
 
 startInput :: CPU ()

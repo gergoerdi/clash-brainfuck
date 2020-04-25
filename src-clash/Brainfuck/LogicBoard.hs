@@ -17,21 +17,18 @@ logicBoard
     -> Signal dom (Maybe Cell)
     -> Signal dom Bool
     -> (Signal dom Bool, Signal dom (Maybe Cell))
-logicBoard programFile inputValue ack = (view inputNeeded <$> cpuOut, view output <$> cpuOut)
+logicBoard programFile inputValue ack = (_inputNeeded <$> cpuOut, _output <$> cpuOut)
   where
     cpuOut = cpu cpuIn
 
-    ramRead = blockRam1 NoClearOnReset (SNat @30_000) 0 ramAddr ramWrite
-    romRead = unpack <$> romFilePow2 programFile romAddr
+    ramRead = blockRam1 NoClearOnReset (SNat @30_000) 0 (_ramAddr <$> cpuOut) write
+    romRead = unpack <$> romFilePow2 programFile (_romAddr <$> cpuOut)
 
     cpuIn = do
-        instr <- romRead
-        memRead <- ramRead
+        romRead <- romRead
+        ramRead <- ramRead
         outputAck <- ack
         input <- inputValue
         pure $ CPUIn{..}
 
-    romAddr = view progAddr <$> cpuOut
-
-    ramAddr = view memAddr <$> cpuOut
-    ramWrite = packWrite <$> ramAddr <*> (view memWrite <$> cpuOut)
+    write = packWrite <$> (_ramAddr <$> cpuOut) <*> (_ramWrite <$> cpuOut)
