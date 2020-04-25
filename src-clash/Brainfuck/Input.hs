@@ -23,21 +23,19 @@ inputs btn rows = (cols, ack, buffer)
           fromActive <$> btn
 
     (cols, key) = inputKeypad keymap rows
-    buffer = bitCoerce <$> vecBuffer zero (enable ack $ pure zero) key
+    buffer = bitCoerce <$> shiftInReg zero (enable ack $ pure zero) key
     zero = repeat 0x0
 
-vecBuffer
+shiftInReg
     :: (KnownNat n, NFDataX a, HiddenClockResetEnable dom)
     => Vec n a
     -> Signal dom (Maybe (Vec n a))
     -> Signal dom (Maybe a)
     -> Signal dom (Vec n a)
-vecBuffer initial new digit = moore step id initial (bundle (new, digit))
+shiftInReg initial load new = vec
   where
-    step current (new, digit) = fromMaybe current . msum $
-        [ new
-        , (current <<+) <$> digit
-        ]
+    vec = regMaybe initial $ muxA [load, shiftIn <$> vec <*> new]
+    shiftIn current new = (current <<+) <$> new
 
 keymap :: Matrix 4 4 (Unsigned 4)
 keymap =
