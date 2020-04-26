@@ -13,7 +13,7 @@ import Control.Monad.State
 import Control.Lens
 import Control.Monad
 
-world :: (MonadBFMemory m, MonadBFIO m) => Raw CPUOut -> m CPUIn
+world :: (MonadBFMemory m, MonadBFIO m) => Pure CPUOut -> m CPUIn
 world CPUOut{..} = do
     romRead <- readProgROM _romAddr
     ramRead <- readRAM _ramAddr

@@ -25,10 +25,10 @@ import Data.Barbie.TH
 (.:=) :: (Applicative f, MonadWriter (Barbie b f) m) => Setter' (b f) (f a) -> a -> m ()
 fd .:= x = scribe (iso getBarbie Barbie . fd) (pure x)
 
-type Raw b = b Bare Identity
+type Pure b = b Bare Identity
 type Partial b = Barbie (b Covered) Last
 
-update :: (BareB b, ApplicativeB (b Covered)) => Raw b -> Partial b -> Raw b
+update :: (BareB b, ApplicativeB (b Covered)) => Pure b -> Partial b -> Pure b
 update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie edits)
   where
     update1 :: Identity a -> Last a -> Identity a
@@ -78,7 +78,7 @@ initCPUState = CPUState
     , _ptr = 0
     }
 
-defaultOutput :: CPUState -> Raw CPUOut
+defaultOutput :: CPUState -> Pure CPUOut
 defaultOutput CPUState{..} = CPUOut
     { _romAddr = _pc
     , _ramAddr = _ptr
@@ -87,10 +87,10 @@ defaultOutput CPUState{..} = CPUOut
     , _inputNeeded = False
     }
 
-cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom (Raw CPUOut)
+cpu :: (HiddenClockResetEnable dom) => Signal dom CPUIn -> Signal dom (Pure CPUOut)
 cpu = mealyState cpuMachine initCPUState
 
-cpuMachine :: CPUIn -> State CPUState (Raw CPUOut)
+cpuMachine :: CPUIn -> State CPUState (Pure CPUOut)
 cpuMachine inp = do
     edits <- execWriterT (step inp)
     out0 <- gets defaultOutput
