@@ -1,6 +1,4 @@
-{-# LANGUAGE RecordWildCards, LambdaCase, NumericUnderscores #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE QuantifiedConstraints, RankNTypes #-}
+{-# LANGUAGE RecordWildCards, LambdaCase #-}
 module Brainfuck.CPU where
 
 import Brainfuck.Types
@@ -8,6 +6,8 @@ import Brainfuck.Stack
 
 import Clash.Prelude
 import RetroClash.Utils
+import RetroClash.Barbies
+import RetroClash.CPU
 import Control.Monad
 import Data.Word
 import Data.Foldable (traverse_)
@@ -21,18 +21,6 @@ import Control.Lens hiding (Index, assign)
 import Barbies
 import Barbies.Bare
 import Data.Barbie.TH
-
-(.:=) :: (Applicative f, MonadWriter (Barbie b f) m) => Setter' (b f) (f a) -> a -> m ()
-fd .:= x = scribe (iso getBarbie Barbie . fd) (pure x)
-
-type Pure b = b Bare Identity
-type Partial b = Barbie (b Covered) Last
-
-update :: (BareB b, ApplicativeB (b Covered)) => Pure b -> Partial b -> Pure b
-update initials edits = bstrip $ bzipWith update1 (bcover initials) (getBarbie edits)
-  where
-    update1 :: Identity a -> Last a -> Identity a
-    update1 initial edit = maybe initial Identity (getLast edit)
 
 declareBareB [d|
   data CPUIn = CPUIn
@@ -88,16 +76,13 @@ defaultOutput CPUState{..} = CPUOut
     , _inputNeeded = False
     }
 
-cpu :: (HiddenClockResetEnable dom) => CPUIn Covered (Signal dom) -> CPUOut Covered (Signal dom)
-cpu = bdistribute' . fmap bcover . mealyState cpuMachine initCPUState . fmap bstrip . bsequence'
+cpu :: (HiddenClockResetEnable dom) => Signals dom CPUIn -> Signals dom CPUOut
+cpu = mealyCPU initCPUState defaultOutput step
 
 cpuMachine :: Pure CPUIn -> State CPUState (Pure CPUOut)
-cpuMachine inp = do
-    edits <- execWriterT (step inp)
-    out0 <- gets defaultOutput
-    return $ update out0 edits
+cpuMachine = runCPU defaultOutput . step
 
-type CPU = WriterT (Barbie (CPUOut Covered) Last) (State CPUState)
+type CPU = CPUM CPUState CPUOut
 
 pushPC :: CPU ()
 pushPC = do

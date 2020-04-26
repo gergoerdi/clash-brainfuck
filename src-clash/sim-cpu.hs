@@ -2,6 +2,7 @@
 module Main where
 
 import Clash.Prelude hiding (lift)
+import RetroClash.Barbies
 import Brainfuck.CPU
 import Brainfuck.Types
 import Brainfuck.IO
