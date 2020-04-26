@@ -4,6 +4,7 @@ import Clash.Prelude
 import Clash.Annotations.TH
 import RetroClash.Utils
 import RetroClash.SevenSegment
+import RetroClash.Barbies
 import Data.Monoid (First(..), Any(..))
 
 import Brainfuck.Types
@@ -16,7 +17,7 @@ topEntity
     -> "BTN"     ::: Signal System (Active High)
     -> "ROWS"    ::: Signal System (Vec 4 (Active Low))
     -> ( "COLS"  ::: Signal System (Vec 4 (Active Low))
-       , "SS"    ::: SevenSegment System 4 Low Low Low
+       , "SS"    ::: Signals System (SevenSegment 4 Low Low Low)
        )
 topEntity = withResetEnableGen board
   where

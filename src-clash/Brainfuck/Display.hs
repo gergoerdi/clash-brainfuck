@@ -37,7 +37,7 @@ display
     :: (HiddenClockResetEnable dom, _)
     => Signal dom (Maybe Cell)
     -> Signal dom (Maybe Cell)
-    -> SevenSegment dom (k + 3) anodes segments dp
+    -> SevenSegment (k + 3) anodes segments dp Covered (Signal dom)
 display output inbuf = driveSS displaySS (pad <$> chars)
   where
     chars = displayChars <$> output <*> inbuf
