@@ -21,7 +21,7 @@ logicBoard programFile inputValue ack = (_inputNeeded <$> cpuOut, _output <$> cp
   where
     cpuOut = cpu cpuIn
 
-    ramRead = blockRam1 NoClearOnReset (SNat @30_000) 0 (_ramAddr <$> cpuOut) write
+    ramRead = blockRam1 ClearOnReset (SNat @30_000) 0 (_ramAddr <$> cpuOut) write
     romRead = unpack <$> romFilePow2 programFile (_romAddr <$> cpuOut)
 
     cpuIn = do

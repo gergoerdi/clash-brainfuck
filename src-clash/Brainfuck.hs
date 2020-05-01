@@ -20,12 +20,14 @@ topEntity
        )
 topEntity = withResetEnableGen board
   where
-    board btn rows = (cols, display outbuf (enable inputNeededBuf inbuf))
+    board btn rows = (cols, ss)
       where
-        (inputNeeded, output) = logicBoard "hello.rom" (enable ack inbuf) ack
-        (cols, ack, inbuf) = inputs btn rows
+        (cols, ack, inBuf) = inputs btn rows
 
-        outbuf = fmap getFirst . integrate ack . fmap First $ output
+        (inputNeeded, output) = logicBoard "hello.rom" (enable ack inBuf) ack
+        outBuf = fmap getFirst . integrate ack . fmap First $ output
         inputNeededBuf = fmap getAny . integrate ack . fmap Any $ inputNeeded
+
+        ss = display outBuf (enable inputNeededBuf inBuf)
 
 makeTopEntity 'topEntity
