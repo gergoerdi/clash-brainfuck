@@ -17,7 +17,7 @@ topEntity
     -> "BTN"     ::: Signal System (Active High)
     -> "ROWS"    ::: Signal System (Vec 4 (Active Low))
     -> ( "COLS"  ::: Signal System (Vec 4 (Active Low))
-       , "SS"    ::: Signals System (SevenSegment 4 Low Low Low)
+       , "SS"    ::: Signal System (SevenSegment 4 Low Low Low)
        )
 topEntity = withResetEnableGen board
   where
