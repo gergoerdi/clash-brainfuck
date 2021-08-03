@@ -25,7 +25,7 @@ topEntity = withResetEnableGen board
       where
         (cols, ack, inBuf) = inputs btn rows
 
-        (inputNeeded, output) = logicBoard "hello.rom" (enable ack inBuf) ack
+        (inputNeeded, output) = logicBoard "_build/prog.bin" (enable ack inBuf) ack
         outBuf = fmap getFirst . integrate ack . fmap First $ output
         inputNeededBuf = fmap getAny . integrate ack . fmap Any $ inputNeeded
 

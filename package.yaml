@@ -3,14 +3,15 @@ version: 0.1.0
 category: hardware
 
 dependencies:
-  - base
+  - base >= 4.7 && < 5
   - clash-prelude
-  - clash-lib
-  - clash-ghc
+  - ghc-typelits-natnormalise
+  - ghc-typelits-extra
+  - ghc-typelits-knownnat
+
   - retroclash-lib
   - retroclash-sim
-  - shake
-  - microstache
+  - clash-shake
 
   - mtl
   - array
@@ -21,6 +22,7 @@ dependencies:
   - bytestring
   - temporary
 
+# Anything that Clash uses by default should go here
 default-extensions:
   - BinaryLiterals
   - ConstraintKinds
@@ -37,7 +39,6 @@ default-extensions:
   - MagicHash
   - MonoLocalBinds
   - NoImplicitPrelude
-  - NoMonomorphismRestriction
   - NoStarIsType
   - NoStrictData
   - NoStrict
@@ -47,14 +48,16 @@ default-extensions:
   - TemplateHaskell
   - TypeApplications
   - TypeFamilies
-  - TypeInType
   - TypeOperators
+
+ghc-options:
+  -fexpose-all-unfoldings -fno-worker-wrapper
+  -fplugin GHC.TypeLits.KnownNat.Solver
+  -fplugin GHC.TypeLits.Normalise
+  -fplugin GHC.TypeLits.Extra.Solver
 
 source-dirs:
   - src
-  - src-haskell
-
-ghc-options: -rtsopts
 
 executables:
   bf-structured:
@@ -67,13 +70,7 @@ executables:
     main: external-memory.hs
 
   bf-sim-cpu:
-    source-dirs:
-      - src
-      - src-clash
     main: sim-cpu.hs
 
   bf-sim-logicboard:
-    source-dirs:
-      - src
-      - src-clash
     main: sim-logicboard.hs

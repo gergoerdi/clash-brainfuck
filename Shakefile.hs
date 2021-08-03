@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings, RecordWildCards #-}
-import ShakeClash
+import Clash.Shake
+import Clash.Shake.Xilinx
 
 import Development.Shake
 import Development.Shake.Command
@@ -15,37 +16,38 @@ import Data.Maybe (fromMaybe)
 import Control.Monad.Reader
 import Control.Monad.Trans.Class
 
-clashProject = ClashProject
-    { projectName = "Brainfuck"
-    , clashModule = "Brainfuck"
-    , clashTopName = "topEntity"
-    , topName = "Top"
-    , clashFlags =
-        [ "-i../retroclash-lib/src"
-        , "-i../src"
-        , "-Wno-partial-type-signatures"
-        , "-fclash-inline-limit=100"
-        ]
-    , shakeDir = "clash-shake/shake"
-    , buildDir = "_build"
-    , clashDir = "clash-syn"
-    }
+outDir :: FilePath
+outDir = "_build"
+
+targets =
+    [ ("nexys-a7-50t", xilinxVivado nexysA750T)
+    -- , ("papilio-pro",  xilinxISE papilioPro)
+    -- , ("papilio-one",  xilinxISE papilioOne)
+    ]
 
 main :: IO ()
-main = clashShake clashProject $ do
-    ClashProject{..} <- ask
-    let synDir = buildDir </> clashDir
+main = shakeArgs shakeOptions{ shakeFiles = outDir } $ do
+    useConfig "build.mk"
 
-    let rom = need
-          [ buildDir </> "hello.rom"
-          ]
+    phony "clean" $ do
+        putNormal $ "Cleaning files in " <> outDir
+        removeFilesAfter outDir [ "//*" ]
 
-    kit@ClashKit{..} <- clashRules Verilog "src-clash" rom
-    -- xilinxISE kit papilioPro "target/papilio-pro" "papilio-pro"
-    -- xilinxISE kit papilioOne "target/papilio-one" "papilio-one"
-    xilinxVivado kit nexysA750T "target/nexys-a7-50t" "nexys-a7-50t"
+    outDir </> "prog.bin" %> \out -> do
+        imageFile <- fromMaybe "hello.bf" <$> getConfig "IMAGE"
+        binImage (Just $ 0x1000) imageFile out
 
-    lift $ do
-      buildDir </> "hello.rom" %> binImage (Just 0x1000) "hello.bf"
+    kit@ClashKit{..} <- clashRules (outDir </> "clash") Verilog
+        [ "src" ]
+        "Brainfuck"
+        [ "-Wno-partial-type-signatures"
+        , "-fclash-inline-limit=600"
+        ] $
+        need [outDir </> "prog.bin"]
+    phony "clashi" $ clash ["--interactive", "src/Brainfuck.hs"]
 
-    return ()
+    forM_ targets $ \(name, synth) -> do
+        SynthKit{..} <- synth kit (outDir </> name) ("target" </> name) "Top"
+
+        mapM_ (uncurry $ nestedPhony name) $
+          ("bitfile", need [bitfile]):phonies
