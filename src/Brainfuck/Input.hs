@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-partial-type-signatures #-}
 {-# LANGUAGE PartialTypeSignatures, ApplicativeDo #-}
 module Brainfuck.Input (inputs) where
 

@@ -40,9 +40,7 @@ main = shakeArgs shakeOptions{ shakeFiles = outDir } $ do
     kit@ClashKit{..} <- clashRules (outDir </> "clash") Verilog
         [ "src" ]
         "Brainfuck"
-        [ "-Wno-partial-type-signatures"
-        , "-fclash-inline-limit=600"
-        ] $
+        [] $
         need [outDir </> "prog.bin"]
     phony "clashi" $ clash ["--interactive", "src/Brainfuck.hs"]
 
